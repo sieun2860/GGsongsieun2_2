@@ -12,6 +12,8 @@ public class DialogueBox : MonoBehaviour
     public bool isOpen = false;
     public Talk nearTalk;
     public Door nearDoor;
+    public StandingProfile[] standingProfiles;
+    public UnityEngine.UI.Image standingImage;
 
     private Talk current;
     private int index = 0;
@@ -37,14 +39,62 @@ public class DialogueBox : MonoBehaviour
         index = 0;
         isOpen = true;
         panel.SetActive(true);
+        if (standingImage != null)
+        {
+            standingImage.sprite = talk.standingSprite;
+            standingImage.gameObject.SetActive(talk.standingSprite != null);
+        }
         ShowLine();
     }
     void ShowLine()
     {
-        nameText.text = current.lines[index].speaker;
-        bodyText.text = current.lines[index].text;
+        DialogueLine line = current.lines[index];
+
+        nameText.text = line.speaker;
+        bodyText.text = line.text;
+
+        StandingProfile profile = null;
+
+        if (standingProfiles != null)
+        {
+            foreach (StandingProfile p in standingProfiles)
+            {
+                if (p.speakerName == line.speaker)
+                {
+                    profile = p;
+                    break;
+                }
+            }
+        }
+
+        if (profile != null &&
+            profile.standingSprites != null &&
+            line.standingSpriteIndex >= 0 &&
+            line.standingSpriteIndex < profile.standingSprites.Length &&
+            profile.standingSprites[line.standingSpriteIndex] != null)
+        {
+            standingImage.sprite =
+                profile.standingSprites[line.standingSpriteIndex];
+
+            standingImage.gameObject.SetActive(true);
+
+            RectTransform rt =
+                standingImage.GetComponent<RectTransform>();
+
+            rt.anchoredPosition = profile.position;
+            rt.sizeDelta = profile.size;
+        }
+        else
+        {
+            standingImage.gameObject.SetActive(false);
+        }
+
         bool last = index == current.lines.Length - 1;
-        if (last && current.choice1 != "") { ShowChoices(); }
+
+        if (last && current.choice1 != "")
+        {
+            ShowChoices();
+        }
     }
     void Next()
     {
@@ -71,6 +121,10 @@ public class DialogueBox : MonoBehaviour
         choosing = false;
         isOpen = false;
         panel.SetActive(false);
+        if (standingImage != null)
+        {
+            standingImage.gameObject.SetActive(false);
+        }
         choicePanel.SetActive(false);
     }
 }

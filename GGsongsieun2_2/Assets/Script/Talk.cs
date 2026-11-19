@@ -9,6 +9,7 @@ public class Talk : MonoBehaviour
     public UnityEvent onChoice2;
     public GameObject prompt;
     public DialogueBox dialogueBox;
+    public Sprite standingSprite;
     public void Say()
     {
         dialogueBox.Open(this);
